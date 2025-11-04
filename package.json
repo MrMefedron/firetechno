@@ -1,0 +1,47 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev:cert": "cross-env NODE_EXTRA_CA_CERTS=C:\\Users\\Lenovo\\Documents\\Sert\\Russian-Trusted-Root-CA.cer nuxt dev",
+    "dev:cert-grisha": "NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/russian_trusted_root_ca.crt nuxt dev",
+    "dev:cert-gleb": "NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/mintsifra/russian_trusted_root_ca_pem.crt nuxt dev",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.810.0",
+    "@langchain/anthropic": "^0.3.33",
+    "@langchain/core": "^0.3.79",
+    "@langchain/openai": "^0.6.16",
+    "@mdi/font": "^7.4.47",
+    "@vueuse/core": "^13.8.0",
+    "fs": "^0.0.1-security",
+    "langchain": "^0.3.36",
+    "motion-v": "^1.1.0-alpha.1",
+    "nuxt": "^4.0.2",
+    "openai": "^6.7.0",
+    "redis": "^5.8.2",
+    "uuid": "^11.1.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1",
+    "vue3-toastify": "^0.2.8"
+  },
+  "devDependencies": {
+    "@inspira-ui/plugins": "^0.0.1",
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cross-env": "^10.0.0",
+    "sass": "^1.88.0",
+    "tailwind-merge": "^3.3.0",
+    "tailwindcss": "^3.4.17",
+    "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.20.5",
+    "vite-plugin-vuetify": "^2.1.1",
+    "vuetify": "^3.8.3"
+  }
+}

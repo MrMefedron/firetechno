@@ -1,0 +1,1 @@
+export { default } from "file:///home/gleb/CLionProjects/FIRETECHNO/YCLIENTS-QUIZ/myproject/node_modules/@nuxt/vite-builder/dist/runtime/vite-node.mjs"
