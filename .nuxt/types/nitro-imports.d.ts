@@ -1,5 +1,4 @@
 declare global {
-  const GigaChatChatModel: typeof import('../../server/utils/gigachatLLM')['GigaChatChatModel']
   const ProxyAPIChatModel: typeof import('../../server/utils/proxyapiLLM')['ProxyAPIChatModel']
   const __buildAssetsURL: typeof import('../../node_modules/nuxt/dist/core/runtime/nitro/utils/paths')['buildAssetsURL']
   const __publicAssetsURL: typeof import('../../node_modules/nuxt/dist/core/runtime/nitro/utils/paths')['publicAssetsURL']
@@ -46,7 +45,6 @@ declare global {
   const fromPlainHandler: typeof import('../../node_modules/h3')['fromPlainHandler']
   const fromWebHandler: typeof import('../../node_modules/h3')['fromWebHandler']
   const getCookie: typeof import('../../node_modules/h3')['getCookie']
-  const getGigaToken: typeof import('../../server/utils/gigachatAccessToken')['getGigaToken']
   const getHeader: typeof import('../../node_modules/h3')['getHeader']
   const getHeaders: typeof import('../../node_modules/h3')['getHeaders']
   const getItemFromHashById: typeof import('../../server/utils/redis')['getItemFromHashById']
@@ -139,9 +137,6 @@ declare global {
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { GigaChatChatModel, GigaChatChatModelInput } from '../../server/utils/gigachatLLM'
-  import('../../server/utils/gigachatLLM')
-  // @ts-ignore
   export type { ProxyAPIChatModel } from '../../server/utils/proxyapiLLM'
   import('../../server/utils/proxyapiLLM')
 }
@@ -160,8 +155,6 @@ export { appendCorsHeaders, appendCorsPreflightHeaders, appendHeader, appendHead
 export { buildAssetsURL as __buildAssetsURL, publicAssetsURL as __publicAssetsURL } from '/home/gleb/CLionProjects/FIRETECHNO/YCLIENTS-QUIZ/myproject/node_modules/nuxt/dist/core/runtime/nitro/utils/paths';
 export { defineAppConfig } from '/home/gleb/CLionProjects/FIRETECHNO/YCLIENTS-QUIZ/myproject/node_modules/nuxt/dist/core/runtime/nitro/utils/config';
 export { getModel, updateToken } from '/home/gleb/CLionProjects/FIRETECHNO/YCLIENTS-QUIZ/myproject/server/utils/aiAgent';
-export { getGigaToken } from '/home/gleb/CLionProjects/FIRETECHNO/YCLIENTS-QUIZ/myproject/server/utils/gigachatAccessToken';
-export { GigaChatChatModel } from '/home/gleb/CLionProjects/FIRETECHNO/YCLIENTS-QUIZ/myproject/server/utils/gigachatLLM';
 export { ProxyAPIChatModel } from '/home/gleb/CLionProjects/FIRETECHNO/YCLIENTS-QUIZ/myproject/server/utils/proxyapiLLM';
 export { saveItemsToHash, getItemFromHashById, useRedis } from '/home/gleb/CLionProjects/FIRETECHNO/YCLIENTS-QUIZ/myproject/server/utils/redis';
 export { default as services } from '/home/gleb/CLionProjects/FIRETECHNO/YCLIENTS-QUIZ/myproject/server/utils/seeds/services';

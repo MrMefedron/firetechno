@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 
   const [companyDataString, chatHistoryStrings] = await Promise.all([
     redis.get(companyKey),
-    redis.lRange(chatKey, 0, -1),
+    redis.lRange(chatKey, -MAX_HISTORY_LENGTH, -1),
   ]);
 
   if (!companyDataString) {
@@ -35,14 +35,13 @@ export default defineEventHandler(async (event) => {
 
   const companyData = JSON.parse(companyDataString);
 
-  const chatHistory = chatHistoryStrings
-    .map((msg) => {
-      const parsed = JSON.parse(msg);
-      return parsed.role === "user"
-        ? `User: ${parsed.content}`
-        : `Assistant: ${parsed.content}`;
-    })
-    .join("\n");
+  const chatHistory = chatHistoryStrings.map((msg) => {
+    const parsed = JSON.parse(msg);
+    return {
+      role: parsed.role,
+      content: parsed.content,
+    };
+  });
 
   const systemPrompt = `
 Ты — умный и дружелюбный ассистент компании "${companyData.name}".
@@ -74,14 +73,18 @@ ${JSON.stringify(companyData.services, null, 2)}
   };
 
   try {
-    const response = await model.invoke([
+    const messagesForModel = [
       { role: "system", content: systemPrompt },
+      ...chatHistory,
       { role: "user", content: message },
-    ]);
+    ];
 
-    const raw = typeof response?.content === "string"
-      ? response.content
-      : JSON.stringify(response?.content);
+    const response = await model.invoke(messagesForModel);
+
+    const raw =
+      typeof response?.content === "string"
+        ? response.content
+        : JSON.stringify(response?.content);
 
     console.log("AI RAW:", raw);
 
@@ -94,7 +97,6 @@ ${JSON.stringify(companyData.services, null, 2)}
         message: raw || "Не удалось распознать ответ модели.",
       };
     }
-
   } catch (error: any) {
     console.error("Ошибка AI запроса:", error);
     throw createError({
@@ -117,12 +119,12 @@ ${JSON.stringify(companyData.services, null, 2)}
     content: finalAnswer.message,
   };
 
-  await Promise.all([
-    redis.rPush(chatKey, JSON.stringify(userMessageToSave)),
-    redis.rPush(chatKey, JSON.stringify(aiResponseToSave)),
-  ]);
-
-  await redis.lTrim(chatKey, -MAX_HISTORY_LENGTH, -1);
+  await redis
+    .multi()
+    .rPush(chatKey, JSON.stringify(userMessageToSave))
+    .rPush(chatKey, JSON.stringify(aiResponseToSave))
+    .lTrim(chatKey, -MAX_HISTORY_LENGTH, -1)
+    .exec();
 
   return { output: finalAnswer };
 });

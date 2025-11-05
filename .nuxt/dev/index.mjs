@@ -1900,7 +1900,7 @@ class ProxyAPIChatModel extends ChatOpenAI {
     super({
       openAIApiKey: apiKey,
       modelName: "gpt-4o",
-      // или "claude-3-haiku-20240307" если поддерживается
+      // claude-3-haiku-20240307 не получилось подрубить
       temperature: 0.3,
       maxTokens: 1024,
       configuration: {
@@ -1974,7 +1974,7 @@ const agent_post = defineEventHandler(async (event) => {
   const chatKey = `chat:${companyId}:${userId}`;
   const [companyDataString, chatHistoryStrings] = await Promise.all([
     redis.get(companyKey),
-    redis.lRange(chatKey, 0, -1)
+    redis.lRange(chatKey, -100, -1)
   ]);
   if (!companyDataString) {
     throw createError({
@@ -1983,10 +1983,13 @@ const agent_post = defineEventHandler(async (event) => {
     });
   }
   const companyData = JSON.parse(companyDataString);
-  chatHistoryStrings.map((msg) => {
+  const chatHistory = chatHistoryStrings.map((msg) => {
     const parsed = JSON.parse(msg);
-    return parsed.role === "user" ? `User: ${parsed.content}` : `Assistant: ${parsed.content}`;
-  }).join("\n");
+    return {
+      role: parsed.role,
+      content: parsed.content
+    };
+  });
   const systemPrompt = `
 \u0422\u044B \u2014 \u0443\u043C\u043D\u044B\u0439 \u0438 \u0434\u0440\u0443\u0436\u0435\u043B\u044E\u0431\u043D\u044B\u0439 \u0430\u0441\u0441\u0438\u0441\u0442\u0435\u043D\u0442 \u043A\u043E\u043C\u043F\u0430\u043D\u0438\u0438 "${companyData.name}".
 \u0422\u0432\u043E\u044F \u0446\u0435\u043B\u044C \u2014 \u043F\u043E\u043C\u043E\u0433\u0430\u0442\u044C \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E \u0432\u044B\u0431\u0438\u0440\u0430\u0442\u044C \u0443\u0441\u043B\u0443\u0433\u0438 \u043A\u043E\u043C\u043F\u0430\u043D\u0438\u0438 \u0438 \u0434\u0430\u0432\u0430\u0442\u044C \u043A\u043E\u0440\u043E\u0442\u043A\u0438\u0435 \u043F\u0440\u0438\u0432\u043B\u0435\u043A\u0430\u0442\u0435\u043B\u044C\u043D\u044B\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F.
@@ -2015,10 +2018,12 @@ ${JSON.stringify(companyData.services, null, 2)}
     message: "\u0418\u0437\u0432\u0438\u043D\u0438\u0442\u0435, \u043D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043B\u0443\u0447\u0438\u0442\u044C \u043E\u0442\u0432\u0435\u0442."
   };
   try {
-    const response = await model.invoke([
+    const messagesForModel = [
       { role: "system", content: systemPrompt },
+      ...chatHistory,
       { role: "user", content: message }
-    ]);
+    ];
+    const response = await model.invoke(messagesForModel);
     const raw = typeof (response == null ? void 0 : response.content) === "string" ? response.content : JSON.stringify(response == null ? void 0 : response.content);
     console.log("AI RAW:", raw);
     try {
@@ -2049,11 +2054,7 @@ ${JSON.stringify(companyData.services, null, 2)}
     isIncoming: true,
     content: finalAnswer.message
   };
-  await Promise.all([
-    redis.rPush(chatKey, JSON.stringify(userMessageToSave)),
-    redis.rPush(chatKey, JSON.stringify(aiResponseToSave))
-  ]);
-  await redis.lTrim(chatKey, -100, -1);
+  await redis.multi().rPush(chatKey, JSON.stringify(userMessageToSave)).rPush(chatKey, JSON.stringify(aiResponseToSave)).lTrim(chatKey, -100, -1).exec();
   return { output: finalAnswer };
 });
 
